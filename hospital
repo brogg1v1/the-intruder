@@ -1,0 +1,228 @@
+-- Roblox Lua Script for "The Intruder - Hospital" Map (By BMF)
+-- Script handles a draggable UI with multiple functionalities
+
+-- Variables
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create UI Elements
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local LocationLabel1 = Instance.new("TextLabel")
+local LocationLabel2 = Instance.new("TextLabel")
+local ErrorLog = Instance.new("TextLabel")
+local UIListLayout = Instance.new("UIListLayout")
+
+-- UI Properties
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
+
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+Title.Parent = MainFrame
+Title.Text = "The Intruder - Hospital (By BMF)"
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+
+LocationLabel1.Parent = MainFrame
+LocationLabel1.Text = "Intruder 1 Location: Loading..."
+LocationLabel1.Size = UDim2.new(1, 0, 0, 30)
+LocationLabel1.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+LocationLabel1.TextColor3 = Color3.fromRGB(255, 255, 255)
+LocationLabel1.Font = Enum.Font.SourceSans
+LocationLabel1.TextSize = 16
+
+LocationLabel2.Parent = MainFrame
+LocationLabel2.Text = "Intruder 2 Location: Loading..."
+LocationLabel2.Size = UDim2.new(1, 0, 0, 30)
+LocationLabel2.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+LocationLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
+LocationLabel2.Font = Enum.Font.SourceSans
+LocationLabel2.TextSize = 16
+
+ErrorLog.Parent = MainFrame
+ErrorLog.Text = "Error Log: None"
+ErrorLog.Size = UDim2.new(1, 0, 0, 30)
+ErrorLog.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+ErrorLog.TextColor3 = Color3.fromRGB(255, 85, 85)
+ErrorLog.Font = Enum.Font.SourceSans
+ErrorLog.TextSize = 14
+ErrorLog.TextWrapped = true
+ErrorLog.TextYAlignment = Enum.TextYAlignment.Top
+
+UIListLayout.Parent = MainFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Function to Create Buttons
+local function createButton(name, callback)
+    local Button = Instance.new("TextButton")
+    Button.Parent = MainFrame
+    Button.Text = name
+    Button.Size = UDim2.new(1, 0, 0, 30)
+    Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Font = Enum.Font.SourceSans
+    Button.TextSize = 16
+    Button.MouseButton1Click:Connect(function()
+        pcall(callback)
+    end)
+    return Button
+end
+
+-- Update Intruder Locations
+spawn(function()
+    while true do
+        local success1, result1 = pcall(function()
+            return workspace.Values.intruderPos1.Value
+        end)
+        if success1 then
+            LocationLabel1.Text = "Intruder 1 Location: " .. tostring(result1)
+        else
+            LocationLabel1.Text = "Intruder 1 Location: Error"
+            ErrorLog.Text = "Error Log: Failed to fetch intruder 1 location."
+        end
+
+        local success2, result2 = pcall(function()
+            return workspace.Values.intruderPos2.Value
+        end)
+        if success2 then
+            LocationLabel2.Text = "Intruder 2 Location: " .. tostring(result2)
+        else
+            LocationLabel2.Text = "Intruder 2 Location: Error"
+            ErrorLog.Text = "Error Log: Failed to fetch intruder 2 location."
+        end
+        wait(1)
+    end
+end)
+
+-- Key 1
+createButton("Teleport to Key 1", function()
+    local key1Position = CFrame.new(154, 4, -152)
+    LocalPlayer.Character.HumanoidRootPart.CFrame = key1Position
+end)
+
+-- Key 2
+createButton("Teleport to Key 2", function()
+    local key2Position = CFrame.new(193, 4, -160)
+    LocalPlayer.Character.HumanoidRootPart.CFrame = key2Position
+end)
+
+
+createButton("Teleport to Elevator", function()
+    local elevator = workspace.Map:FindFirstChild("Elevator")
+    if elevator then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = elevator.CFrame
+    end
+end)
+
+createButton("Teleport to Generator", function()
+    local generator = workspace.Map:FindFirstChild("Generator")
+    if generator then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = generator.CFrame
+    end
+end)
+
+createButton("Teleport to Office", function()
+    local office = workspace.Map:FindFirstChild("Office")
+    if office then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = office.CFrame
+    end
+end)
+
+createButton("Intruder Ignores You", function()
+    -- Destroy ShameTeleport if it exists in workspace
+    local shameTeleport = workspace:FindFirstChild("ShameTeleport")
+    if shameTeleport then
+        shameTeleport:Destroy()
+    end
+end)
+
+createButton("God Mode", function()
+    -- Destroy specified paths
+    local pathsToDestroy = {
+        workspace:FindFirstChild("Sounds") and workspace.Sounds:FindFirstChild("DeathSound"),
+        game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("DeathShake"),
+        game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Death"),
+        game:GetService("ReplicatedStorage"):FindFirstChild("activateDeath"),
+        game:GetService("ReplicatedStorage"):FindFirstChild("clientPartnerDeath"),
+        game:GetService("ReplicatedStorage"):FindFirstChild("playerDeath"),
+        game:GetService("StarterGui"):FindFirstChild("Death"),
+        game:GetService("StarterPack"):FindFirstChild("DeathShake")
+    }
+    
+    -- Loop through each path and destroy it if it exists
+    for _, path in pairs(pathsToDestroy) do
+        if path then
+            path:Destroy()
+        end
+    end
+end)
+
+createButton("Make Nightmare Mode", function()
+    local values = workspace.Values
+    if values then
+        -- Set Easy Mode to false and Nightmare Mode to true
+        values.isEasyMode.Value = false
+        values.isNightmareMode.Value = true
+    end
+end)
+
+createButton("Full Bright", function()
+    game.Lighting.Brightness = 2
+    game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+end)
+
+createButton("Delete Lockers", function()
+    local lockers = workspace:FindFirstChild("Lockers")
+    if lockers then
+        lockers:Destroy()
+    end
+end)
+
+createButton("Delete Office Doors", function()
+    local securityDoor1 = workspace.Floor4:FindFirstChild("SecurityDoor1")
+    local securityDoor2 = workspace.Floor4:FindFirstChild("SecurityDoor2")
+    
+    if securityDoor1 then
+        securityDoor1:Destroy()
+    end
+
+    if securityDoor2 then
+        securityDoor2:Destroy()
+    end
+end)
+
+createButton("Delete Cameras", function()
+    local turnOnCamera = workspace:FindFirstChild("TurnOnCamera")
+    if turnOnCamera then
+        turnOnCamera:Destroy()
+    end
+end)
+
+createButton("Delete Office Lever", function()
+    local officeLever = workspace.Floor4:FindFirstChild("Lever")
+    if officeLever then
+        officeLever:Destroy()
+    end
+end)
+
+createButton("Delete Tutorial", function()
+    local book = workspace:FindFirstChild("Book")
+    if book then
+        book:Destroy()
+    end
+end)
+
+-- Final Touch
+print("The Intruder - Hospital Script Loaded Successfully")
